@@ -1,7 +1,7 @@
 .PHONY: all clean test
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -fsanitize=undefined -std=c++14 -O3 -Iinclude
+CXXFLAGS = -Wall -Wextra -fsanitize=undefined -std=c++1z -O3 -Iinclude -march=native
 LDFLAGS =
 
 OBJS =
