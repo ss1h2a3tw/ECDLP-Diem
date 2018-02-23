@@ -17,6 +17,8 @@ include_directories ("include")
 enable_testing ()
 
 add_executable (ff-basic test/ff-basic.cpp)
+add_executable (fibonacci test/fibonacci.cpp)
 
-add_test (maintest ff-basic)
+add_test (ff-basic-test ff-basic)
+add_test (fibonacci-test fibonacci)
 
