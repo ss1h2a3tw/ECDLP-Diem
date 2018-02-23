@@ -6,42 +6,43 @@
 #include <cassert>
 #include <string>
 #include <utility>
-template <size_t N>
+template <size_t N,const char* IRR>
 class GF2n{
 public:
-    static const std::bitset<2*N> zero;
-    static const std::bitset<2*N> one;
+    static constexpr std::bitset<2*N> zero{0};
+    static constexpr std::bitset<2*N> one{1};
     //this is [0..n-1] is 1
-    static const std::bitset<2*N> all;
+    static constexpr std::bitset<2*N> all=[](){
+        std::bitset<2*N> tmp;
+        for(size_t i = 0 ; i < N ; i ++){
+            tmp[i]=1;
+        }
+        return tmp;
+    };
+    static const std::bitset<2*N> irr;
     std::bitset<2*N> x;
-    const std::bitset<2*N> irr;
-    GF2n<N>(const std::string& y,const std::string& yirr):x(y),irr(yirr){}
-    GF2n<N>(const std::bitset<N>& y,const std::bitset<N+1>& yirr):x(convert(y)),irr(convert(yirr)){}
-    GF2n<N>(const std::bitset<N>& y,const std::bitset<2*N>& yirr):x(convert(y)),irr(yirr){}
-    GF2n<N>(const std::bitset<2*N>& y,const std::bitset<N+1>& yirr):x(y),irr(convert(yirr)){}
-    GF2n<N>(const std::bitset<2*N>& y,const std::bitset<2*N>& yirr):x(y),irr(yirr){}
-    GF2n<N>(const GF2n<N>&)=default;
-    GF2n<N>(GF2n<N>&&)=default;
-    GF2n<N>& operator=(const GF2n<N>&)=default;
-    GF2n<N>& operator=(GF2n<N>&&)=default;
-    GF2n<N> operator+(const GF2n<N>& y)const{
+    GF2n<N,IRR>(const std::string& y):x(y){}
+    GF2n<N,IRR>(const std::bitset<N>& y):x(convert(y)){}
+    GF2n<N,IRR>(const std::bitset<2*N>& y):x(y){}
+    GF2n<N,IRR>(const GF2n<N,IRR>&)=default;
+    GF2n<N,IRR>(GF2n<N,IRR>&&)=default;
+    GF2n<N,IRR>& operator=(const GF2n<N,IRR>&)=default;
+    GF2n<N,IRR>& operator=(GF2n<N,IRR>&&)=default;
+    GF2n<N,IRR> operator+(const GF2n<N,IRR>& y)const{
         std::bitset<2*N> tmp=x^y.x;
-        return GF2n<N>(tmp,irr);
+        return GF2n<N,IRR>(tmp);
     }
-    GF2n<N> operator*(const GF2n<N>& y)const{
+    GF2n<N,IRR> operator*(const GF2n<N,IRR>& y)const{
         assert(irr==y.irr);
-        return GF2n<N>(bsmul(x,y.x),irr);
+        return GF2n<N,IRR>(bsmul(x,y.x));
     }
-    GF2n<N> operator/(const GF2n<N>& y)const{
-        assert(irr==y.irr);
-        return GF2n<N>(bsdiv(x,y.x),irr);
+    GF2n<N,IRR> operator/(const GF2n<N,IRR>& y)const{
+        return GF2n<N,IRR>(bsdiv(x,y.x));
     }
-    bool operator==(const GF2n<N>& y)const{
-        assert(irr==y.irr);
-        return x==y.x && irr == y.irr;
+    bool operator==(const GF2n<N,IRR>& y)const{
+        return x==y.x;
     }
-    bool operator!=(const GF2n<N>& y)const{
-        assert(irr==y.irr);
+    bool operator!=(const GF2n<N,IRR>& y)const{
         return !((*this)==y);
     }
 private:
@@ -81,7 +82,7 @@ private:
         }
         return len;
     }
-    std::pair<std::bitset<2*N>,std::bitset<2*N>> bsdiv(std::bitset<2*N>&& r,const std::bitset<2*N>& d)const{
+    std::pair<std::bitset<2*N>,std::bitset<2*N>> bsdivqr(std::bitset<2*N>&& r,const std::bitset<2*N>& d)const{
         //calulating p = d*q+r
         //because r calculating the result of substraction of p
         //so we just read p as r
@@ -101,31 +102,27 @@ private:
         }
         return {q,r};
     }
-    std::pair<std::bitset<2*N>,std::bitset<2*N>> div(std::bitset<2*N> r,const std::bitset<2*N>& d)const{
-        return bsdiv(std::move(r),d);
+    std::pair<std::bitset<2*N>,std::bitset<2*N>> bsdivqr(const std::bitset<2*N>& tr,const std::bitset<2*N>& d)const{
+        std::bitset<2*N> r(tr);
+        return bsdivqr(std::move(r),d);
     }
     std::bitset<N*2> inv(const std::bitset<2*N>& k)const{
         if(k==one)return k;
-        auto [q,r] = div(irr,k);
+        auto [q,r] = bsdivqr(irr,k);
         return bsmul(inv(r),q);
     }
 };
-template<size_t N>
-const std::bitset<2*N> GF2n<N>::zero(0);
-template<size_t N>
-const std::bitset<2*N> GF2n<N>::one(1);
-//Maybe have a better way to initial this
-//some compile time tricks
-template<size_t N>
-const std::bitset<2*N> GF2n<N>::all([](){
-    std::bitset<2*N> tmp;
-    for(size_t i = 0 ; i < N ; i ++){
-        tmp[i]=1;
+template<size_t N,const char* IRR>
+const std::bitset<2*N> GF2n<N,IRR>::irr = [](){
+    const std::bitset<2*N> tmp(IRR);
+    assert(tmp[N]==1);
+    for(size_t i = N+1 ; i < 2*N ; i ++){
+        assert(tmp[i]==0);
     }
     return tmp;
-});
-template<size_t N>
-std::ostream& operator<<(std::ostream& os,const GF2n<N> x){
+}();
+template<size_t N,const char* IRR>
+std::ostream& operator<<(std::ostream& os,const GF2n<N,IRR> x){
     for(size_t i = N-1 ;; i --){
         os << x.x[i];
         if(i==0)break;
@@ -155,7 +152,7 @@ class EC{
         if(inf) return true;
         return x==r.x&&y==r.y;
     }
-    bool operator-()const{
+    EC<F> operator-()const{
         return EC<F>(x,x+y,inf,a2,a6);
     }
     EC<F> operator+(const EC<F>& r)const{
