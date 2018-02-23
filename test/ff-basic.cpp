@@ -5,9 +5,9 @@
 #include "finitefield.hpp"
 using namespace std;
 
+//x^10 + x^6 + x^5 + x^3 + x^2 + x + 1
 const char irr[] = "10001101111";
-int main (){
-    //x^10 + x^6 + x^5 + x^3 + x^2 + x + 1
+void testgf(){
     //x^8 + x^7 + x^6 + x^5 + x
     GF2n<10,irr> x(bitset<10>("0111100010"));
     //x^9 + x^6 + x^5 + x^4 + x + 1
@@ -26,4 +26,42 @@ int main (){
     assert(x/o==x);
     assert(y/o==y);
     cout << "Finite Field Basic Passed" << endl;
+}
+//x^9 + x^5 + x^4 + x^3
+const GF2n<10,irr> a2("1000111000");
+//x^8 + x^3
+const GF2n<10,irr> a6("0100001000");
+void testec(){
+    using F = GF2n<10,irr>;
+    using E = EC<F,a2,a6>;
+    E inf(F::zero,F::zero,true);
+    //x^8 + x^7 + x^6 + 1 : x^9 + x^7 + x^6 + x^5 + x^4 + x^3 + x^2 + x
+    E x(F("0111000001"),F("1011111110"),false);
+    // -x  = x^8 + x^7 + x^6 + 1 : x^9 + x^8 + x^5 + x^4 + x^3 + x^2 + x + 1
+    E nx(F("0111000001"),F("1100111111"),false);
+    // 2*x = x^8 + x^7 + x^6 + x^2 + x + 1 : x^8 + x^7 + x^2
+    E dx(F("0111000111"),F("0110000100"),false);
+    assert(inf==inf);
+    assert(inf==-inf);
+    assert(inf==inf+inf);
+    assert(x+inf==x);
+    assert(x==x);
+    assert(x==-nx);
+    assert(-x==nx);
+    assert(x+nx==inf);
+    assert(x+x==dx);
+    assert(dx-x==x);
+    //x^9 + x^8 + x^7 + x^5 + x^4 + x^3 + 1 : x^8 + x^5 + x^3 + x + 1
+    E y(F("1110111001"),F("0100101011"),false);
+    //x+y = x^8 + x^3 + x^2 : x^9 + x^7 + x^5
+    E a(F("0100001100"),F("1010100000"),false);
+    //x-y = (x^9 + x^8 + x^7 + x^5 + x^2 + 1 : x^7 + x^6 + x^3 + x^2 + 1
+    E s(F("1110100101"),F("0011001101"),false);
+    assert(x+y==a);
+    assert(x-y==s);
+    cout << "Elliptic Curve Basic Passed" << endl;
+}
+int main (){
+    testgf();
+    testec();
 }

@@ -24,6 +24,7 @@ public:
     GF2n<N,IRR>(const std::string& y):x(y){}
     GF2n<N,IRR>(const std::bitset<N>& y):x(convert(y)){}
     GF2n<N,IRR>(const std::bitset<2*N>& y):x(y){}
+    GF2n<N,IRR>(std::bitset<2*N>&& y):x(std::move(y)){}
     GF2n<N,IRR>(const GF2n<N,IRR>&)=default;
     GF2n<N,IRR>(GF2n<N,IRR>&&)=default;
     GF2n<N,IRR>& operator=(const GF2n<N,IRR>&)=default;
@@ -33,7 +34,6 @@ public:
         return GF2n<N,IRR>(tmp);
     }
     GF2n<N,IRR> operator*(const GF2n<N,IRR>& y)const{
-        assert(irr==y.irr);
         return GF2n<N,IRR>(bsmul(x,y.x));
     }
     GF2n<N,IRR> operator/(const GF2n<N,IRR>& y)const{
@@ -46,7 +46,7 @@ public:
         return !((*this)==y);
     }
 private:
-    std::bitset<2*N> bsmul(const std::bitset<2*N>& l,const std::bitset<2*N>& r)const{
+    constexpr std::bitset<2*N> bsmul(const std::bitset<2*N>& l,const std::bitset<2*N>& r)const{
         std::bitset<2*N> tmp;
         for(size_t i = N-1 ;; i--){
             tmp<<=1;
@@ -60,12 +60,12 @@ private:
         }
         return tmp;
     }
-    std::bitset<2*N> bsdiv(const std::bitset<2*N>& l,const std::bitset<2*N>& r)const{
-        auto k=inv(r);
+    constexpr std::bitset<2*N> bsdiv(const std::bitset<2*N>& l,const std::bitset<2*N>& r)const{
+        const auto k=inv(r);
         return bsmul(l,k);
     }
     template<size_t A>
-    std::bitset<2*N> convert(const std::bitset<A>& k)const{
+    constexpr std::bitset<2*N> convert(const std::bitset<A>& k)const{
         const size_t S=std::min(A,2*N);
         std::bitset<2*N> out;
         for(size_t i = 0 ; i < S ; i ++){
@@ -73,7 +73,7 @@ private:
         }
         return out;
     }
-    size_t bslen(const std::bitset<2*N>& bs)const{
+    constexpr size_t bslen(const std::bitset<2*N>& bs)const{
         size_t len = N+1;
         for(size_t i = N ;; i --){
             if(bs[i])break;
@@ -82,12 +82,12 @@ private:
         }
         return len;
     }
-    std::pair<std::bitset<2*N>,std::bitset<2*N>> bsdivqr(std::bitset<2*N>&& r,const std::bitset<2*N>& d)const{
+    constexpr std::pair<std::bitset<2*N>,std::bitset<2*N>> bsdivqr(std::bitset<2*N>&& r,const std::bitset<2*N>& d)const{
         //calulating p = d*q+r
         //because r calculating the result of substraction of p
         //so we just read p as r
-        size_t plen = bslen(r);
-        size_t dlen = bslen(d);
+        const size_t plen = bslen(r);
+        const size_t dlen = bslen(d);
         assert(d!=0);
         if(plen<dlen){
             return {zero,r};
@@ -102,13 +102,13 @@ private:
         }
         return {q,r};
     }
-    std::pair<std::bitset<2*N>,std::bitset<2*N>> bsdivqr(const std::bitset<2*N>& tr,const std::bitset<2*N>& d)const{
+    constexpr std::pair<std::bitset<2*N>,std::bitset<2*N>> bsdivqr(const std::bitset<2*N>& tr,const std::bitset<2*N>& d)const{
         std::bitset<2*N> r(tr);
         return bsdivqr(std::move(r),d);
     }
-    std::bitset<N*2> inv(const std::bitset<2*N>& k)const{
+    constexpr std::bitset<N*2> inv(const std::bitset<2*N>& k)const{
         if(k==one)return k;
-        auto [q,r] = bsdivqr(irr,k);
+        const auto [q,r] = bsdivqr(irr,k);
         return bsmul(inv(r),q);
     }
 };
@@ -131,31 +131,35 @@ std::ostream& operator<<(std::ostream& os,const GF2n<N,IRR> x){
 }
 // Using elliptic curve with characteristic=2 , and j(E) != 0
 // So the equation will be y^2 + xy = x^3 + a2x^2 + a6
-template<class F>
+template<class F,const F& A2,const F& A6>
 class EC{
+public:
     F x,y;
     bool inf;
-    const F a2,a6;
-    EC<F>(const EC<F>&)=default;
-    EC<F>(EC<F>&&)=default;
-    EC<F>& operator=(const EC<F>&)=default;
-    EC<F>& operator=(EC<F>&&)=default;
-    EC<F>(const F& ix,const F& iy,bool iinf,const F& ia2,const F& ia6):x(ix),y(iy),inf(iinf),a2(ia2),a6(ia6){
-        assert(a6.x!=F::zero);
+    static const F &a2,&a6;
+    EC<F,A2,A6>(const EC<F,A2,A6>&)=default;
+    EC<F,A2,A6>(EC<F,A2,A6>&&)=default;
+    EC<F,A2,A6>& operator=(const EC<F,A2,A6>&)=default;
+    EC<F,A2,A6>& operator=(EC<F,A2,A6>&&)=default;
+    template <typename J,typename K>
+    EC<F,A2,A6>(J && ix,K && iy,bool iinf):x(std::forward<J>(ix)),y(std::forward<K>(iy)),inf(iinf){
         if(!inf){
             assert(y*y+x*y==x*x*x+a2*x*x+a6);
         }
     }
-    bool operator==(const EC<F>& r)const{
-        assert(a2==r.a2&&a6==r.a6);
+    bool operator==(const EC<F,A2,A6>& r)const{
         if(inf!=r.inf)return false;
         if(inf) return true;
         return x==r.x&&y==r.y;
     }
-    EC<F> operator-()const{
-        return EC<F>(x,x+y,inf,a2,a6);
+    EC<F,A2,A6> operator-()const{
+        if(inf)return *this;
+        return EC<F,A2,A6>(x,x+y,inf);
     }
-    EC<F> operator+(const EC<F>& r)const{
+    EC<F,A2,A6> operator-(const EC<F,A2,A6>& r)const{
+        return *this+(-r);
+    }
+    EC<F,A2,A6> operator+(const EC<F,A2,A6>& r)const{
         assert(a2==r.a2&&a6==r.a6);
         if(r.inf){
             return *this;
@@ -164,12 +168,30 @@ class EC{
             return r;
         }
         if(*this==-r){
-            return EC<F>(x,y,true,a2,a6);
+            return EC<F,A2,A6>(x,y,true);
         }
         if(*this==r){
+            auto tmp = x*x;
+            auto x3 = tmp+a6/tmp;
+            auto y3 = tmp + (x + y/x)*x3 + x3;
+            return EC<F,A2,A6>(std::move(x3),std::move(y3),false);
         }
-        else{
-        }
+        //*this!=r,this!=-r,none of them is inf
+        auto lam = (y+r.y)/(x+r.x);
+        auto x3 = lam*lam + lam + x + r.x + a2;
+        auto y3 = lam*(x+x3) + x3 + y;
+        return EC<F,A2,A6>(std::move(x3),std::move(y3),false);
     }
-
 };
+template<class F,const F& A2,const F& A6>
+const F& EC<F,A2,A6>::a2 = A2;
+template<class F,const F& A2,const F& A6>
+const F& EC<F,A2,A6>::a6 = [](){
+    assert(A6!=F::zero);
+    return A6;
+}();
+template<class F,const F& A2,const F& A6>
+std::ostream& operator<<(std::ostream& os,const EC<F,A2,A6> x){
+    os << '(' << x.x << ',' << x.y << ')' ;
+    return os;
+}
