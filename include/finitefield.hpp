@@ -171,13 +171,13 @@ public:
             return EC<F,A2,A6>(x,y,true);
         }
         if(*this==r){
-            auto tmp = x*x;
+            const auto tmp = x*x;
             auto x3 = tmp+a6/tmp;
             auto y3 = tmp + (x + y/x)*x3 + x3;
             return EC<F,A2,A6>(std::move(x3),std::move(y3),false);
         }
         //*this!=r,this!=-r,none of them is inf
-        auto lam = (y+r.y)/(x+r.x);
+        const auto lam = (y+r.y)/(x+r.x);
         auto x3 = lam*lam + lam + x + r.x + a2;
         auto y3 = lam*(x+x3) + x3 + y;
         return EC<F,A2,A6>(std::move(x3),std::move(y3),false);
