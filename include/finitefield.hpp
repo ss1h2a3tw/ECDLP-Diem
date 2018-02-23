@@ -182,6 +182,18 @@ public:
         auto y3 = lam*(x+x3) + x3 + y;
         return EC<F,A2,A6>(std::move(x3),std::move(y3),false);
     }
+    //Need to add bignum support later
+    EC<F,A2,A6> operator*(unsigned long long k){
+        if(k==0)return EC<F,A2,A6>(F::zero,F::zero,true);
+        if(k==1)return *this;
+        const auto tmp = *this * (k/2);
+        if(k&1ull){
+            return *this+tmp+tmp;
+        }
+        else{
+            return tmp+tmp;
+        }
+    }
 };
 template<class F,const F& A2,const F& A6>
 const F& EC<F,A2,A6>::a2 = A2;

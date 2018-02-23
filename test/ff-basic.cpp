@@ -50,6 +50,10 @@ void testec(){
     assert(-x==nx);
     assert(x+nx==inf);
     assert(x+x==dx);
+    assert(x*2==dx);
+    assert(x*0==inf);
+    assert(x*1==x);
+    assert(x*4==dx*2);
     assert(dx-x==x);
     //x^9 + x^8 + x^7 + x^5 + x^4 + x^3 + 1 : x^8 + x^5 + x^3 + x + 1
     E y(F("1110111001"),F("0100101011"),false);
