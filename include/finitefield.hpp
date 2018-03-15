@@ -21,6 +21,7 @@ public:
     };
     static const std::bitset<2*N> irr;
     std::bitset<2*N> x;
+    GF2n<N,IRR>():x(){}
     GF2n<N,IRR>(const std::string& y):x(y){}
     GF2n<N,IRR>(const std::bitset<N>& y):x(convert(y)){}
     GF2n<N,IRR>(const std::bitset<2*N>& y):x(y){}
@@ -33,8 +34,16 @@ public:
         std::bitset<2*N> tmp=x^y.x;
         return GF2n<N,IRR>(tmp);
     }
+    GF2n<N,IRR>& operator+=(const GF2n<N,IRR>& y){
+        x^=y.x;
+        return *this;
+    }
     GF2n<N,IRR> operator*(const GF2n<N,IRR>& y)const{
         return GF2n<N,IRR>(bsmul(x,y.x));
+    }
+    GF2n<N,IRR>& operator*=(const GF2n<N,IRR>& y){
+        *this=*this*y;
+        return *this;
     }
     GF2n<N,IRR> operator/(const GF2n<N,IRR>& y)const{
         return GF2n<N,IRR>(bsdiv(x,y.x));
@@ -44,6 +53,9 @@ public:
     }
     bool operator!=(const GF2n<N,IRR>& y)const{
         return !((*this)==y);
+    }
+    bool iszero()const{
+        return x==zero;
     }
 private:
     constexpr std::bitset<2*N> bsmul(const std::bitset<2*N>& l,const std::bitset<2*N>& r)const{
@@ -131,9 +143,10 @@ std::ostream& operator<<(std::ostream& os,const GF2n<N,IRR> x){
 }
 // Using elliptic curve with characteristic=2 , and j(E) != 0
 // So the equation will be y^2 + xy = x^3 + a2x^2 + a6
-template<class F,const F& A2,const F& A6>
+template<class Field,const Field& A2,const Field& A6>
 class EC{
 public:
+    using F=Field;
     F x,y;
     bool inf;
     static const F &a2,&a6;
