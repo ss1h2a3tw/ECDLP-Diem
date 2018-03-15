@@ -24,7 +24,7 @@ public:
         //Assert that no value in map is zero
         return f==r.f;
     }
-    P operator+(P&& r)const {
+    P operator+(P&& r)const{
         for(const auto& [k,v]:f){
             r.f[k]+=v;
         }
@@ -34,6 +34,13 @@ public:
     P operator+(const P& r)const{
         auto t = r;
         return *this+std::move(t);
+    }
+    P& operator+=(const P& r){
+        for(const auto& [k,v]:r.f){
+            f[k]+=v;
+        }
+        clear_zero(f);
+        return *this;
     }
     P operator*(const P& r)const{
         std::map<Term,F> m;
@@ -48,6 +55,10 @@ public:
         }
         clear_zero(m);
         return P{std::move(m)};
+    }
+    P& operator*=(const P& r){
+        *this=*this*r;
+        return *this;
     }
 private:
     void clear_zero(std::map<Term,F> &m)const{

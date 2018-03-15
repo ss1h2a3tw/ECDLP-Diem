@@ -25,6 +25,12 @@ int main (){
     P py{{A{0,0,0},y},{A{1,0,0},y}};
     P pp{{A{0,0,0},p},{A{1,0,0},y}};
     P pm{{A{0,0,0},m},{A{1,0,0},m}};
+    P ppp = px;
+    ppp+=py;
+    P pmp = px;
+    pmp*=py;
     assert(px+py==pp);
+    assert(ppp==pp);
     assert(px*py==pm);
+    assert(pmp==pm);
 }
