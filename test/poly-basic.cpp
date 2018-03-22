@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdio>
+#include <iostream>
 #include "poly.hpp"
 
 using namespace std;
@@ -46,4 +47,8 @@ int main (){
     // x^8 + x^7 + x^6 + x^3 + x^2 + x + 1
     F res("0111001111");
     assert(peval.eval(val)==res);
+    P aa{{A{0,0,0},a6}};
+    P aaa{{A{0,0,0},a6*a6}};
+    std::cout << aa << aaa << endl;
+    assert(aa*aa==aaa);
 }

@@ -6,6 +6,7 @@
 #include <cassert>
 #include <string>
 #include <utility>
+#include <iostream>
 template <size_t N,const char* IRR>
 class GF2n{
 public:
@@ -35,7 +36,7 @@ public:
         return *this+y;
     }
     F operator-(F&& y)const{
-        return *this+move(y);
+        return *this+std::move(y);
     }
     F operator-()const{
         return *this;
@@ -156,7 +157,7 @@ private:
     }
 };
 template<size_t N,const char* IRR>
-const std::bitset<2*N> GF2n<N,IRR>::irr = [](){
+const std::bitset<2*N> __attribute__ ((init_priority (200))) GF2n<N,IRR>::irr = [](){
     const std::bitset<2*N> tmp(IRR);
     assert(tmp[N]==1);
     for(size_t i = N+1 ; i < 2*N ; i ++){

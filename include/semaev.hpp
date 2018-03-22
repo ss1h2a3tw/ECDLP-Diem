@@ -3,85 +3,47 @@
 #include <cstdio>
 #include <iostream>
 template<size_t N,class EC>
-const Poly<N,typename EC::F> semaev_GF2n = [](){
+const Poly<N,typename EC::F> __attribute__((init_priority(65535))) semaev_GF2n = [](){
     using std::array;
     using F = typename EC::F;
     using Term = typename Poly<N,F>::Term;
     const size_t J = N/2-1;
-    array<array<Poly<N,F>,N>,N> m{};
-    array<Poly<N,F>,N-J> l{};
-    array<Poly<N,F>,J+2> r{};
+    const size_t DL = 1<<(N-J-2);
+    const size_t DR = 1<<(J+2-2);
+    const size_t MS = DL+DR;
+    array<array<Poly<N,F>,MS>,MS> m{};
+    array<Poly<N,F>,DL+1> l{};
+    array<Poly<N,F>,DR+1> r{};
     const auto& lf = semaev_GF2n<N-J,EC>;
     const auto& rf = semaev_GF2n<J+2,EC>;
     for(const auto& [t,s]:lf.f){
-        Term now{};
+        Term now{0};
         for(size_t i = 1 ; i < N-J ; i ++){
             now[i-1]=t[i];
         }
         l[t[0]]+=Poly<N,F>{{now,s}};
     }
-    printf("L (%d):\n",N-J);
-    for(int i = 0 ; i < N-J ; i ++){
-        printf("%d pow\n",i);
-        for(auto [t,s]:l[i].f){
-            for(int i = 0 ; i < N ; i ++){
-                printf("%d-",t[i]);
-            }
-            printf("\n");
-        }
-    }
     for(const auto& [t,s]:rf.f){
-        Term now{};
+        Term now{0};
         for(size_t i = 1 ; i < J+2 ; i ++){
             now[N-J-1+i-1]=t[i];
         }
         r[t[0]]+=Poly<N,F>{{now,s}};
     }
-    printf("R (%d):\n",J+2);
-    for(int i = 0 ; i < J+2 ; i ++){
-        printf("%d pow\n",i);
-        for(auto [t,s]:r[i].f){
-            for(int i = 0 ; i < N ; i ++){
-                printf("%d-",t[i]);
-            }
-            printf("\n");
+    for(size_t i = 0 ; i < DR ; i ++){
+        for(size_t j = 0 ; j < DL+1 ; j ++){
+            m[i][i+j]=l[DL-j];
         }
     }
-    for(size_t i = 0 ; i < J+1 ; i ++){
-        for(size_t j = 0 ; j < N-J ; j ++){
-            m[i][i+j]=l[N-J-1-j];
+    for(size_t i = 0 ; i < DL ; i ++){
+        for(size_t j = 0 ; j < DR+1 ; j ++){
+            m[i+DR][i+j]=r[DR-j];
         }
     }
-    for(size_t i = 0 ; i < N-J-1 ; i ++){
-        for(size_t j = 0 ; j < J+2 ; j ++){
-            m[i+J+1][i+j]=r[J+1-j];
-        }
-    }
-    for(int i = 0 ; i < N ; i ++){
-        for(int j = 0 ; j < N ; j ++){
-            printf("(%d,%d):\n",i,j);
-            for(auto [t,s]:m[i][j].f){
-                std::cout << s << "* (";
-                for(int k = 0 ; k < N ; k ++){
-                    std::cout << t[k] << "-";
-                }
-                std::cout << ")\n";
-            }
-        }
-    }
-    auto ttt = determinant(m);
-    printf("res\n");
-    for(auto [t,s]:ttt.f){
-        std::cout << s << "* (";
-        for(int k = 0 ; k < N ; k ++){
-            std::cout << t[k] << "-";
-        }
-        std::cout << ")\n";
-    }
-    return ttt;
+    return determinant(m);
 }();
 template<class EC>
-const Poly<2,typename EC::F> semaev_GF2n<2,EC> = [](){
+const Poly<2,typename EC::F> __attribute__((init_priority(65535))) semaev_GF2n<2,EC> = [](){
     using std::array;
     using A=array<int,2>;
     using F = typename EC::F;
@@ -90,7 +52,7 @@ const Poly<2,typename EC::F> semaev_GF2n<2,EC> = [](){
     return Poly<2,F>{{x,one},{y,one}};
 }();
 template<class EC>
-const Poly<3,typename EC::F> semaev_GF2n<3,EC> = [](){
+const Poly<3,typename EC::F> __attribute__((init_priority(65535))) semaev_GF2n<3,EC> = [](){
     using std::array;
     using A=array<int,3>;
     using F = typename EC::F;
