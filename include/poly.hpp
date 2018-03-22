@@ -108,7 +108,7 @@ template <size_t M,class F>
 std::ostream& operator<<(std::ostream& os,const Poly<M,F>& x){
     for(auto [t,s]:x.f){
         os << s << " * ";
-        for(int i = 0 ; i < M ; i ++){
+        for(size_t i = 0 ; i < M ; i ++){
             os << "x" << i << "^" << t[i];
             if(i!=M-1)os << " * ";
             else os << " ";
