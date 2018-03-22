@@ -28,6 +28,20 @@ public:
     bool operator!=(const P& r)const{
         return !(*this == r);
     }
+    P operator-()const{
+        auto t = *this;
+        for(auto& p:t.f){
+            p.second=-p.second;
+        }
+        return t;
+    }
+    P operator-(const P& r)const{
+        return *this+(-r);
+    }
+    P& operator-=(const P& r){
+        *this = *this-r;
+        return *this;
+    }
     P operator+(P&& r)const{
         for(const auto& [k,v]:f){
             r.f[k]+=v;

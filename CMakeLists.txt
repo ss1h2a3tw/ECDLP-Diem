@@ -19,8 +19,12 @@ enable_testing ()
 add_executable (ff-basic test/ff-basic.cpp)
 add_executable (poly-basic test/poly-basic.cpp)
 add_executable (fibonacci test/fibonacci.cpp)
+add_executable (semaev test/semaev.cpp)
+add_executable (determinant test/determinant.cpp)
 
 add_test (ff-basic-test ff-basic)
 add_test (poly-basic-test poly-basic)
+add_test (semaev-test semaev)
+add_test (determinant-test determinant)
 add_test (fibonacci-test fibonacci)
 

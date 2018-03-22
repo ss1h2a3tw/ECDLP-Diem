@@ -1,7 +1,6 @@
 #include <cassert>
 #include <cstdio>
 #include "poly.hpp"
-#include "semaev.hpp"
 
 using namespace std;
 const char irr[] = "10001101111";
@@ -30,9 +29,11 @@ int main (){
     P pmp = px;
     pmp*=py;
     assert(px+py==pp);
+    assert(px-py==pp);
     assert(ppp==pp);
     assert(px*py==pm);
     assert(pmp==pm);
+    assert(pm-pm==P{});
     auto tmp = px;
     tmp+=py;
     assert(tmp==pp);

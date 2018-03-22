@@ -31,6 +31,19 @@ public:
     GF2n<N,IRR>(F&&)=default;
     F& operator=(const F&)=default;
     F& operator=(F&&)=default;
+    F operator-(const F& y)const{
+        return *this+y;
+    }
+    F operator-(F&& y)const{
+        return *this+move(y);
+    }
+    F operator-()const{
+        return *this;
+    }
+    F& operator-=(const F& y){
+        *this+=y;
+        return *this;
+    }
     F operator+(const F& y)const{
         std::bitset<2*N> tmp=x^y.x;
         return F(tmp);

@@ -21,12 +21,17 @@ void testgf(){
     GF2n<10,irr> d("1101110111");
     GF2n<10,irr> o("0000000001");
     assert(x+y==p);
+    assert(x-y==p);
+    assert(x==-x);
     assert(x*y==m);
     assert(x/y==d);
     assert(x/o==x);
     assert(y/o==y);
     auto tmp = x;
     tmp+=y;
+    assert(tmp==p);
+    tmp = x;
+    tmp-=y;
     assert(tmp==p);
     tmp=x;
     tmp*=y;
