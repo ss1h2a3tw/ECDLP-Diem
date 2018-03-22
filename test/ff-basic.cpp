@@ -25,6 +25,16 @@ void testgf(){
     assert(x/y==d);
     assert(x/o==x);
     assert(y/o==y);
+    auto tmp = x;
+    tmp+=y;
+    assert(tmp==p);
+    tmp=x;
+    tmp*=y;
+    assert(tmp==m);
+    tmp=x;
+    tmp/=y;
+    assert(tmp==d);
+    assert(x.pow(5)==x*x*x*x*x);
     cout << "Finite Field Basic Passed" << endl;
 }
 //x^9 + x^5 + x^4 + x^3

@@ -17,12 +17,16 @@ public:
     Poly(std::initializer_list<std::pair<const Term,F>> l):f(l){}
     Poly(const P&) = default;
     Poly(P&&) = default;
+    P& operator=(const P&) = default;
+    P& operator=(P&&) = default;
     Poly(std::map<Term,F>&& x):f(x){};
     Poly(const std::map<Term,F>& x):f(x){};
-    P& operator=(P&&) = default;
     bool operator==(const P& r)const{
         //Assert that no value in map is zero
         return f==r.f;
+    }
+    bool operator!=(const P& r)const{
+        return !(*this == r);
     }
     P operator+(P&& r)const{
         for(const auto& [k,v]:f){
@@ -60,7 +64,18 @@ public:
         *this=*this*r;
         return *this;
     }
+    /*
+    F eval(const std::array<M,Term>& val)const{
+        for
+    }*/
 private:
+    F evalTerm(Term x,const std::array<F,M>& val)const{
+        auto tmp = F{F::one};
+        for(size_t i = 0 ; i < M ; i ++){
+            tmp*=val[i].pow(x[i]);
+        }
+        return tmp;
+    }
     void clear_zero(std::map<Term,F> &m)const{
         for(auto it = m.begin() ; it != m.end() ;){
             if(it->second.iszero()){

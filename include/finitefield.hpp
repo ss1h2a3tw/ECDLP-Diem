@@ -9,6 +9,7 @@
 template <size_t N,const char* IRR>
 class GF2n{
 public:
+    using F = GF2n<N,IRR>;
     static constexpr std::bitset<2*N> zero{0};
     static constexpr std::bitset<2*N> one{1};
     //this is [0..n-1] is 1
@@ -18,7 +19,7 @@ public:
             tmp[i]=1;
         }
         return tmp;
-    };
+    }();
     static const std::bitset<2*N> irr;
     std::bitset<2*N> x;
     GF2n<N,IRR>():x(){}
@@ -26,32 +27,48 @@ public:
     GF2n<N,IRR>(const std::bitset<N>& y):x(convert(y)){}
     GF2n<N,IRR>(const std::bitset<2*N>& y):x(y){}
     GF2n<N,IRR>(std::bitset<2*N>&& y):x(std::move(y)){}
-    GF2n<N,IRR>(const GF2n<N,IRR>&)=default;
-    GF2n<N,IRR>(GF2n<N,IRR>&&)=default;
-    GF2n<N,IRR>& operator=(const GF2n<N,IRR>&)=default;
-    GF2n<N,IRR>& operator=(GF2n<N,IRR>&&)=default;
-    GF2n<N,IRR> operator+(const GF2n<N,IRR>& y)const{
+    GF2n<N,IRR>(const F&)=default;
+    GF2n<N,IRR>(F&&)=default;
+    F& operator=(const F&)=default;
+    F& operator=(F&&)=default;
+    F operator+(const F& y)const{
         std::bitset<2*N> tmp=x^y.x;
-        return GF2n<N,IRR>(tmp);
+        return F(tmp);
     }
-    GF2n<N,IRR>& operator+=(const GF2n<N,IRR>& y){
+    F& operator+=(const F& y){
         x^=y.x;
         return *this;
     }
-    GF2n<N,IRR> operator*(const GF2n<N,IRR>& y)const{
-        return GF2n<N,IRR>(bsmul(x,y.x));
+    F operator*(const F& y)const{
+        return F(bsmul(x,y.x));
     }
-    GF2n<N,IRR>& operator*=(const GF2n<N,IRR>& y){
+    F& operator*=(const F& y){
         *this=*this*y;
         return *this;
     }
-    GF2n<N,IRR> operator/(const GF2n<N,IRR>& y)const{
-        return GF2n<N,IRR>(bsdiv(x,y.x));
+    F operator/(const F& y)const{
+        return F(bsdiv(x,y.x));
     }
-    bool operator==(const GF2n<N,IRR>& y)const{
+    F& operator/=(const F& y){
+        *this = *this/y;
+        return *this;
+    }
+    F pow(unsigned long long p)const{
+        auto t=*this;
+        auto now=F{one};
+        while(p){
+            if(p&1){
+                now*=t;
+            }
+            p>>=1;
+            t=t*t;
+        }
+        return now;
+    }
+    bool operator==(const F& y)const{
         return x==y.x;
     }
-    bool operator!=(const GF2n<N,IRR>& y)const{
+    bool operator!=(const F& y)const{
         return !((*this)==y);
     }
     bool iszero()const{
@@ -119,6 +136,7 @@ private:
         return bsdivqr(std::move(r),d);
     }
     constexpr std::bitset<N*2> inv(const std::bitset<2*N>& k)const{
+        assert(k!=zero);
         if(k==one)return k;
         const auto [q,r] = bsdivqr(irr,k);
         return bsmul(inv(r),q);
@@ -147,32 +165,37 @@ template<class Field,const Field& A2,const Field& A6>
 class EC{
 public:
     using F=Field;
+    using E=EC<F,A2,A6>;
+    static const F &a2,&a6;
     F x,y;
     bool inf;
-    static const F &a2,&a6;
-    EC<F,A2,A6>(const EC<F,A2,A6>&)=default;
-    EC<F,A2,A6>(EC<F,A2,A6>&&)=default;
-    EC<F,A2,A6>& operator=(const EC<F,A2,A6>&)=default;
-    EC<F,A2,A6>& operator=(EC<F,A2,A6>&&)=default;
+    EC<F,A2,A6>(const E&)=default;
+    EC<F,A2,A6>(E&&)=default;
+    EC<F,A2,A6>& operator=(const E&)=default;
+    EC<F,A2,A6>& operator=(E&&)=default;
     template <typename J,typename K>
     EC<F,A2,A6>(J && ix,K && iy,bool iinf):x(std::forward<J>(ix)),y(std::forward<K>(iy)),inf(iinf){
         if(!inf){
             assert(y*y+x*y==x*x*x+a2*x*x+a6);
         }
     }
-    bool operator==(const EC<F,A2,A6>& r)const{
+    bool operator==(const E& r)const{
         if(inf!=r.inf)return false;
         if(inf) return true;
         return x==r.x&&y==r.y;
     }
-    EC<F,A2,A6> operator-()const{
+    E operator-()const{
         if(inf)return *this;
-        return EC<F,A2,A6>(x,x+y,inf);
+        return E(x,x+y,inf);
     }
-    EC<F,A2,A6> operator-(const EC<F,A2,A6>& r)const{
+    E operator-(const E& r)const{
         return *this+(-r);
     }
-    EC<F,A2,A6> operator+(const EC<F,A2,A6>& r)const{
+    E& operator-=(const E& r){
+        *this = *this-r;
+        return *this;
+    }
+    E operator+(const E& r)const{
         assert(a2==r.a2&&a6==r.a6);
         if(r.inf){
             return *this;
@@ -181,31 +204,36 @@ public:
             return r;
         }
         if(*this==-r){
-            return EC<F,A2,A6>(x,y,true);
+            return E(x,y,true);
         }
         if(*this==r){
             const auto tmp = x*x;
             auto x3 = tmp+a6/tmp;
             auto y3 = tmp + (x + y/x)*x3 + x3;
-            return EC<F,A2,A6>(std::move(x3),std::move(y3),false);
+            return E(std::move(x3),std::move(y3),false);
         }
         //*this!=r,this!=-r,none of them is inf
         const auto lam = (y+r.y)/(x+r.x);
         auto x3 = lam*lam + lam + x + r.x + a2;
         auto y3 = lam*(x+x3) + x3 + y;
-        return EC<F,A2,A6>(std::move(x3),std::move(y3),false);
+        return E(std::move(x3),std::move(y3),false);
+    }
+    E& operator+=(const E& r){
+        *this = *this+r;
+        return *this;
     }
     //Need to add bignum support later
-    EC<F,A2,A6> operator*(unsigned long long k){
-        if(k==0)return EC<F,A2,A6>(F::zero,F::zero,true);
-        if(k==1)return *this;
-        const auto tmp = *this * (k/2);
-        if(k&1ull){
-            return *this+tmp+tmp;
+    E operator*(unsigned long long k){
+        auto ans = E(F::zero,F::zero,true);
+        auto x = *this;
+        while(k){
+            if(k&1){
+                ans+=x;
+            }
+            k>>=1;
+            x=x+x;
         }
-        else{
-            return tmp+tmp;
-        }
+        return ans;
     }
 };
 template<class F,const F& A2,const F& A6>

@@ -33,4 +33,10 @@ int main (){
     assert(ppp==pp);
     assert(px*py==pm);
     assert(pmp==pm);
+    auto tmp = px;
+    tmp+=py;
+    assert(tmp==pp);
+    tmp = px;
+    tmp*=py;
+    assert(tmp==pm);
 }
