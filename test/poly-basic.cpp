@@ -39,4 +39,10 @@ int main (){
     tmp = px;
     tmp*=py;
     assert(tmp==pm);
+    array<F,3> val={x,y,p};
+    // p*(x0*x1^2*x2) + x + y*(x0)
+    P peval{{A{1,2,1},p},{A{0,0,0},x},{A{0,1,0},y}};
+    // x^8 + x^7 + x^6 + x^3 + x^2 + x + 1
+    F res("0111001111");
+    assert(peval.eval(val)==res);
 }

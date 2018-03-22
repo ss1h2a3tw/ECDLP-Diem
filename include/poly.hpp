@@ -64,13 +64,16 @@ public:
         *this=*this*r;
         return *this;
     }
-    /*
-    F eval(const std::array<M,Term>& val)const{
-        for
-    }*/
+    F eval(const std::array<F,M>& val)const{
+        F res{};
+        for(const auto& [t,s]:f){
+            res+=evalTerm(t,val)*s;
+        }
+        return res;
+    }
 private:
-    F evalTerm(Term x,const std::array<F,M>& val)const{
-        auto tmp = F{F::one};
+    F evalTerm(const Term& x,const std::array<F,M>& val)const{
+        F tmp{F::one};
         for(size_t i = 0 ; i < M ; i ++){
             tmp*=val[i].pow(x[i]);
         }
