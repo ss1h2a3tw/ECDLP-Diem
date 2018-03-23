@@ -11,7 +11,7 @@ template <size_t N,const char* IRR>
 class GF2n{
 public:
     using F = GF2n<N,IRR>;
-    static constexpr n = N;
+    static constexpr int n = N;
     static constexpr std::bitset<2*N> zero{0};
     static constexpr std::bitset<2*N> one{1};
     //this is [0..n-1] is 1
