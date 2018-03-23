@@ -37,5 +37,6 @@ int main (){
     assert(f3.eval({x.x,y.x,(x+y).x})==F{});
     assert(f4.eval({x.x,y.x,a.x,(x+y+a).x})==F{});
     assert(f5.eval({x.x,y.x,a.x,b.x,(-(x+y+a+b)).x})==F{});
+    assert(f5.partialEval(0,x.x).eval({y.x,a.x,b.x,(-(x+y+a+b)).x})==F{});
     //assert(f6.eval({x.x,y.x,a.x,b.x,c.x,(-(x+y+a+b+c)).x})==F{});
 }

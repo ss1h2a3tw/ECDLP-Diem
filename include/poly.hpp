@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <initializer_list>
 #include <map>
-#include <cstdio>
 
 template <size_t M,class F>
 class Poly{
@@ -86,6 +85,35 @@ public:
         }
         return res;
     }
+    Poly<M-1,F> partialEval(size_t idx,const F& val)const{
+        std::map<std::array<int,M-1>,F> m;
+        for(const auto& [t,s]:f){
+            auto news = s;
+            std::array<int,M-1> newt;
+            for(size_t i = 0 ; i < M ; i ++){
+                if(i<idx){
+                    newt[i]=t[i];
+                }
+                else if(i==idx){
+                    news*=val.pow(t[i]);
+                }
+                else{
+                    newt[i-1]=t[i];
+                }
+            }
+            m[newt]+=news;
+        }
+        Poly<M-1,F>::clear_zero(m);
+        return Poly<M-1,F>{m};
+    }
+    static void clear_zero(std::map<Term,F> &m){
+        for(auto it = m.begin() ; it != m.end() ;){
+            if(it->second.iszero()){
+                it = m.erase(it);
+            }
+            else it ++;
+        }
+    }
 private:
     F evalTerm(const Term& x,const std::array<F,M>& val)const{
         F tmp{F::one};
@@ -93,14 +121,6 @@ private:
             tmp*=val[i].pow(x[i]);
         }
         return tmp;
-    }
-    void clear_zero(std::map<Term,F> &m)const{
-        for(auto it = m.begin() ; it != m.end() ;){
-            if(it->second.iszero()){
-                it = m.erase(it);
-            }
-            else it ++;
-        }
     }
 };
 
