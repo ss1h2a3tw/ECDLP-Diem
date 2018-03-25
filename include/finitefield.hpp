@@ -21,6 +21,7 @@ struct GF2{
     bool operator!=(const GF2& r)const;
     bool iszero()const;
 };
+std::ostream& operator<<(std::ostream& os,const GF2 x);
 
 template <size_t N,const char* IRR>
 class GF2n{

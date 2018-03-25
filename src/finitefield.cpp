@@ -33,3 +33,7 @@ bool GF2::operator!=(const GF2& r)const{
 bool GF2::iszero()const{
     return !x;
 }
+std::ostream& operator<<(std::ostream& os,const GF2 x){
+    os << (int)x.x;
+    return os;
+}

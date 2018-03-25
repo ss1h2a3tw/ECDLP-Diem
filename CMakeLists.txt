@@ -22,11 +22,13 @@ add_executable (fibonacci test/fibonacci.cpp)
 add_executable (semaev test/semaev.cpp)
 add_executable (determinant test/determinant.cpp)
 add_executable (weil src/finitefield.cpp test/weil.cpp)
+add_executable (grobner src/finitefield.cpp test/grobner.cpp)
 
 add_test (ff-basic-test ff-basic)
 add_test (poly-basic-test poly-basic)
 add_test (semaev-test semaev)
 add_test (determinant-test determinant)
 add_test (weil-test weil)
+add_test (grobner-test grobner)
 add_test (fibonacci-test fibonacci)
 
