@@ -5,12 +5,8 @@
 #include "weil.hpp"
 
 using namespace std;
-//x^3 + x + 1
-//x^9 + x^5 + x^4 + x^3
-//const GF2n<10,irr> a2("1000111000");
-//x^8 + x^3
-//const GF2n<10,irr> a6("0100001000");
 void basicPlus(){
+    //x^3 + x + 1
     static const char irr [] = "1011";
     using F = GF2n<3,irr>;
     using bF = GF2;
@@ -22,9 +18,10 @@ void basicPlus(){
         Poly<6,bF>{{bA{1,0,0,0,0,0},bo},{bA{0,0,0,1,0,0},bo}},
         Poly<6,bF>{{bA{0,1,0,0,0,0},bo},{bA{0,0,0,0,1,0},bo}},
         Poly<6,bF>{{bA{0,0,1,0,0,0},bo},{bA{0,0,0,0,0,1},bo}}};
-    assert(weilDescent<3>(p)==res);
+    assert((weilDescent<3,2>(p)==res));
 }
 void basicMul(){
+    //x^3 + x + 1
     static const char irr [] = "1011";
     using F = GF2n<3,irr>;
     using bF = GF2;
@@ -36,18 +33,32 @@ void basicMul(){
         Poly<6,bF>{{bA{1,0,0,1,0,0},bo},{bA{0,1,0,0,0,1},bo},{bA{0,0,1,0,1,0},bo}},
         Poly<6,bF>{{bA{0,1,0,1,0,0},bo},{bA{1,0,0,0,1,0},bo},{bA{0,0,1,0,0,1},bo},{bA{0,1,0,0,0,1},bo},{bA{0,0,1,0,1,0},bo}},
         Poly<6,bF>{{bA{0,0,1,1,0,0},bo},{bA{0,1,0,0,1,0},bo},{bA{1,0,0,0,0,1},bo},{bA{0,0,1,0,0,1},bo}}};
-    assert(weilDescent<3>(p)==res);
+    assert((weilDescent<3,2>(p)==res));
+}
+//x^10 + x^6 + x^5 + x^3 + x^2 + x + 1
+static const char irr[] = "10001101111";
+//x^9 + x^5 + x^4 + x^3
+static const GF2n<10,irr> a2("1000111000");
+//x^8 + x^3
+static const GF2n<10,irr> a6("0100001000");
+void semaev(){
+    using F = GF2n<10,irr>;
+    using E = EC<F,a2,a6>;
+    const auto& f4 = semaev_GF2n<3,E>;
+    printf("Semaev size: %zu\n",f4.f.size());
+    auto p = weilDescent<5,4>(f4);
+    size_t tot=0;
+    for(int i = 0 ; i < 10 ; i ++){
+        tot+=p[i].f.size();
+    }
+    printf("After Weil size %zu\n",tot);
+    (void)p;
 }
 int main (){
-    //using F = GF2n<10,irr>;
-    //using E = EC<F,a2,a6>;
-    //const auto& f5 = semaev_GF2n<5,E>;
-    //printf("!!%d",(int)f5.f.size());
-    //getchar();
-    //getchar();
-    //getchar();
-    //auto p = weilDescent<5>(f5);
-    //(void)p;
     basicPlus();
     basicMul();
+    printf("Basic Passed\n");
+    semaev();
+    semaev();
+    printf("Semaev generated\n");
 }
