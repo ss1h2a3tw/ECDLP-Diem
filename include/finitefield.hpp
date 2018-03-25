@@ -17,6 +17,7 @@ struct GF2{
     GF2& operator+=(const GF2&r);
     GF2 operator*(const GF2& r)const;
     GF2& operator*=(const GF2& r);
+    GF2 sqrt()const;
     bool operator==(const GF2& r)const;
     bool operator!=(const GF2& r)const;
     bool iszero()const;
@@ -95,6 +96,13 @@ public:
             t=t*t;
         }
         return now;
+    }
+    F sqrt()const{
+        auto t = *this;
+        for(size_t i = 0 ; i < N-1 ; i ++){
+            t=t*t;
+        }
+        return t;
     }
     bool operator==(const F& y)const{
         return x==y.x;

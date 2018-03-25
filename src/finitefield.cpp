@@ -37,3 +37,6 @@ std::ostream& operator<<(std::ostream& os,const GF2 x){
     os << (int)x.x;
     return os;
 }
+GF2 GF2::sqrt()const{
+    return *this;
+}

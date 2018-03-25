@@ -10,7 +10,7 @@ endif()
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 set (CMAKE_CXX_FLAGS_DEBUG "-fsanitize=undefined -g")
-set (CMAKE_CXX_FLAGS_RELEASE "-march=native -O3")
+set (CMAKE_CXX_FLAGS_RELEASE "-march=native -O3 -DNDEBUG")
 
 include_directories ("include")
 

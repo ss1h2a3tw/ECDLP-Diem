@@ -42,6 +42,8 @@ void testgf(){
     assert(tmp==d);
     assert(x.pow(5)==x*x*x*x*x);
     assert((x*x)/x==x);
+    assert(x.sqrt()*x.sqrt()==x);
+    assert(y.sqrt()*y.sqrt()==y);
     cout << "Finite Field Basic Passed" << endl;
 }
 //x^9 + x^5 + x^4 + x^3
@@ -102,6 +104,8 @@ void testgf2(){
     assert(o*z==z);
     assert(z*o==z);
     assert(o*o==o);
+    assert(o.sqrt()*o.sqrt()==o);
+    assert(z.sqrt()*z.sqrt()==z);
 }
 int main (){
     testgf2();
