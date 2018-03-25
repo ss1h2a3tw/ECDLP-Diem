@@ -8,9 +8,9 @@ using namespace std;
 //x^10 + x^6 + x^5 + x^3 + x^2 + x + 1
 const char irr[] = "10001101111";
 //x^9 + x^5 + x^4 + x^3
-const GF2n<10,irr> __attribute__((init_priority(200))) a2("1000111000");
+const GF2n<10,irr> a2("1000111000");
 //x^8 + x^3
-const GF2n<10,irr> __attribute__((init_priority(200))) a6("0100001000");
+const GF2n<10,irr> a6("0100001000");
 int main (){
     using F = GF2n<10,irr>;
     using E = EC<F,a2,a6>;

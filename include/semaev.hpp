@@ -1,7 +1,8 @@
 #pragma once
-#include "poly.hpp"
 #include <cstdio>
 #include <iostream>
+#include "poly.hpp"
+#include "determinant.hpp"
 template<size_t N,class EC>
 const Poly<N,typename EC::F> __attribute__((init_priority(65535))) semaev_GF2n = [](){
     using std::array;

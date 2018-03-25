@@ -85,7 +85,26 @@ void testec(){
     assert(x-y==s);
     cout << "Elliptic Curve Basic Passed" << endl;
 }
+void testgf2(){
+    GF2 z{0};
+    GF2 o{1};
+    assert(z+z==z);
+    assert(o+z==o);
+    assert(z+o==o);
+    assert(o+o==z);
+
+    assert(z-z==z);
+    assert(o-z==o);
+    assert(z-o==o);
+    assert(o-o==z);
+
+    assert(z*z==z);
+    assert(o*z==z);
+    assert(z*o==z);
+    assert(o*o==o);
+}
 int main (){
+    testgf2();
     testgf();
     testec();
 }

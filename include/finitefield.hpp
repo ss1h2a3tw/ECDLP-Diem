@@ -7,11 +7,26 @@
 #include <string>
 #include <utility>
 #include <iostream>
+
+struct GF2{
+    bool x;
+    GF2 operator-()const;
+    GF2 operator-(const GF2& r)const;
+    GF2& operator-=(const GF2&r);
+    GF2 operator+(const GF2& r)const;
+    GF2& operator+=(const GF2&r);
+    GF2 operator*(const GF2& r)const;
+    GF2& operator*=(const GF2& r);
+    bool operator==(const GF2& r)const;
+    bool operator!=(const GF2& r)const;
+    bool iszero()const;
+};
+
 template <size_t N,const char* IRR>
 class GF2n{
 public:
     using F = GF2n<N,IRR>;
-    static constexpr int n = N;
+    static constexpr size_t n = N;
     static constexpr std::bitset<2*N> zero{0};
     static constexpr std::bitset<2*N> one{1};
     //this is [0..n-1] is 1

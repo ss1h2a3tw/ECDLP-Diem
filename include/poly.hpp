@@ -7,10 +7,12 @@
 #include <initializer_list>
 #include <map>
 
-template <size_t M,class F>
+template <size_t M,class Field>
 class Poly{
 public:
+    static constexpr size_t m = M;
     using Term=std::array<int,M>;
+    using F = Field;
     using P = Poly<M,F>;
     std::map<Term,F> f;
     Poly():f(){}
@@ -60,6 +62,11 @@ public:
         clear_zero(f);
         return *this;
     }
+    P& addTerm(const Term& t,const F& s){
+        f[t]+=s;
+        //For performance, not clearing zero
+        return *this;
+    }
     P operator*(const P& r)const{
         std::map<Term,F> m;
         for(const auto& [x,xv]:f){
@@ -106,6 +113,10 @@ public:
         Poly<M-1,F>::clear_zero(m);
         return Poly<M-1,F>{m};
     }
+    void clearZero(){
+        clear_zero(f);
+    }
+
     static void clear_zero(std::map<Term,F> &m){
         for(auto it = m.begin() ; it != m.end() ;){
             if(it->second.iszero()){
