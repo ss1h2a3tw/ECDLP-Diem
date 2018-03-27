@@ -38,7 +38,7 @@ std::array<Poly<K*P::m,GF2>,P::F::n> weilDescent (const P& p){
                 for(const auto& [t,s] : tmp.f){
                     auto tt =t;
                     for(size_t idx = 0 ; idx < K*m ; idx ++){
-                        if(tt[i])tt[i]=1;
+                        if(tt[idx])tt[idx]=1;
                     }
                     af.addTerm(tt,s);
                 }
