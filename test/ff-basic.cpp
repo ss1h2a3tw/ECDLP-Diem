@@ -50,6 +50,12 @@ void testgf(){
 const GF2n<10,irr> a2("1000111000");
 //x^8 + x^3
 const GF2n<10,irr> a6("0100001000");
+void testgety(const GF2n<10,irr>& x){
+    using F = GF2n<10,irr>;
+    using E = EC<F,a2,a6>;
+    F y=E::gety(x);
+    assert(y*y+x*y==x*x*x+a2*x*x+a6);
+}
 void testec(){
     using F = GF2n<10,irr>;
     using E = EC<F,a2,a6>;
@@ -85,6 +91,10 @@ void testec(){
     E s(F("1110100101"),F("0011001101"),false);
     assert(x+y==a);
     assert(x-y==s);
+    testgety(x.x);
+    testgety(y.x);
+    testgety(a.x);
+    testgety(s.x);
     cout << "Elliptic Curve Basic Passed" << endl;
 }
 void testgf2(){

@@ -104,6 +104,24 @@ public:
         }
         return t;
     }
+    F trace()const{
+        F t=x;
+        F res{};
+        for(size_t i = 0 ; i < n ; i ++){
+            res+=t;
+            t=t*t;
+        }
+        return res;
+    }
+    F halftrace()const{
+        F t=x;
+        F res{};
+        for(size_t i = 0 ; i <= (n-1)/2 ; i ++){
+            res+=t;
+            t=t*t;
+        }
+        return res;
+    }
     bool operator==(const F& y)const{
         return x==y.x;
     }
@@ -216,6 +234,55 @@ public:
     EC<F,A2,A6>(J && ix,K && iy,bool iinf):x(std::forward<J>(ix)),y(std::forward<K>(iy)),inf(iinf){
         if(!inf){
             assert(y*y+x*y==x*x*x+a2*x*x+a6);
+        }
+    }
+    static F gety(const F& x){
+        static const F goodbasis=[](){
+            F tmp{};
+            for(size_t i = 0 ; i < F::n ; i ++){
+                tmp.x[i]=1;
+                if(tmp.trace().x==F::one){
+                    break;
+                }
+                tmp.x[i]=0;
+            }
+            return tmp;
+        }();
+        //if can't find, throw 0
+        if(x.x==F::zero){
+            return x.sqrt();
+        }
+        F b = x;
+        F c = -(x*x*x + a2*x*x + a6);
+        F tb = c/(b*b);
+        if(F::n&1){
+            //odd
+            if(tb.trace().x!=F::zero){
+                throw 0;
+            }
+            tb = tb.halftrace();
+            tb *= b;
+            return tb;
+        }
+        else{
+            //even
+            std::cout << "goodbasis " << goodbasis << std::endl;
+            F res{};
+            for(size_t i=0 ; i <= F::n-2 ; i ++){
+                F d=goodbasis;
+                for(size_t j = 0 ; j <= i ; j ++){
+                    d=d*d;
+                }
+                F mul={};
+                for(size_t j = i + 1 ; j <= F::n-1 ; j ++){
+                    mul+=d;
+                    d=d*d;
+                }
+                res += mul*tb;
+                tb=tb*tb;
+            }
+            res *= b;
+            return res;
         }
     }
     bool operator==(const E& r)const{
