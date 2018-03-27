@@ -46,6 +46,7 @@ public:
     GF2n<N,IRR>(const std::bitset<N>& y):x(convert(y)){}
     GF2n<N,IRR>(const std::bitset<2*N>& y):x(y){}
     GF2n<N,IRR>(std::bitset<2*N>&& y):x(std::move(y)){}
+    GF2n<N,IRR>(unsigned long long y):x(y){};
     GF2n<N,IRR>(const F&)=default;
     GF2n<N,IRR>(F&&)=default;
     F& operator=(const F&)=default;
@@ -118,6 +119,7 @@ public:
         F res{};
         for(size_t i = 0 ; i <= (n-1)/2 ; i ++){
             res+=t;
+            t=t*t;
             t=t*t;
         }
         return res;
@@ -255,18 +257,18 @@ public:
         F b = x;
         F c = -(x*x*x + a2*x*x + a6);
         F tb = c/(b*b);
+        if(tb.trace().x!=F::zero){
+            throw 0;
+        }
         if(F::n&1){
             //odd
-            if(tb.trace().x!=F::zero){
-                throw 0;
-            }
             tb = tb.halftrace();
             tb *= b;
             return tb;
         }
         else{
             //even
-            std::cout << "goodbasis " << goodbasis << std::endl;
+            std::cout << "g:" << goodbasis << std::endl;
             F res{};
             for(size_t i=0 ; i <= F::n-2 ; i ++){
                 F d=goodbasis;
