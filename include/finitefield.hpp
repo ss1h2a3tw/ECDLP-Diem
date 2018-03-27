@@ -268,7 +268,6 @@ public:
         }
         else{
             //even
-            std::cout << "g:" << goodbasis << std::endl;
             F res{};
             for(size_t i=0 ; i <= F::n-2 ; i ++){
                 F d=goodbasis;
