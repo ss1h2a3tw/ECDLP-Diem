@@ -20,7 +20,7 @@ vector<Poly<M,F>> conv(const array<Poly<M,F>,N>& a){
 }
 
 const int N=10;
-const int n=5,m=2;
+const int n=2,m=4;
 //x^10 + x^6 + x^5 + x^3 + x^2 + x + 1
 const char irr[]="10001101111";
 using F = GF2n<N,irr>;
@@ -136,7 +136,6 @@ array<GF2,M> solve(list<pair<Poly<M,GF2>,bitset<M>>> l){
                 tmp[idx]=GF2{true};
                 if(it->first.eval(tmp)==GF2{false}){
                     tmp[idx]=GF2{false};
-                    assert(it->first.eval(GF2{true})==GF2{true});
                     addans(idx,GF2{true});
                     it=l.begin();
                     continue;
@@ -214,6 +213,7 @@ int main (){
         }
         array<long long,(1<<n)> scaler = solvePoint(pxa,r);
         (void) scaler;
+        //a.addPoly({{a,b},scaler});
         cout << "fin,try: " << cnt << endl;
         cnt=0;
         getchar();
