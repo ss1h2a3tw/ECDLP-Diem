@@ -8,6 +8,7 @@
 #include "semaev.hpp"
 #include "weil.hpp"
 #include "grobner.hpp"
+#include "gauss.hpp"
 
 using namespace std;
 template <size_t N,size_t M,class F>
@@ -20,7 +21,7 @@ vector<Poly<M,F>> conv(const array<Poly<M,F>,N>& a){
 }
 
 const int N=10;
-const int n=2,m=4;
+const int n=5,m=2;
 //x^10 + x^6 + x^5 + x^3 + x^2 + x + 1
 const char irr[]="10001101111";
 using F = GF2n<N,irr>;
@@ -44,11 +45,11 @@ list<pair<Poly<M,GF2>,bitset<M>>> convlist(const vector<Poly<M,GF2>>& v){
         bitset<M> have{};
         for(auto [t,_]:p.f){
             (void)_;
-            for(size_t i = 0 ; i < n*m ; i ++){
+            for(size_t i = 0 ; i < M ; i ++){
                 if(t[i])have[i]=true;
             }
         }
-        tv.push_back({p,have});
+        if(have.count()>0)tv.push_back({p,have});
     }
     auto cmp = [](const PP& x,const PP& y){
         return x.second.count() < y.second.count();
@@ -75,12 +76,14 @@ unordered_map<bitset<2*N>,bitset<2*N>> allpoint;
 unordered_map<bitset<2*N>,size_t> allpoint_id;
 
 void init_allpoint(){
-    for(unsigned long long i = 0 ; i < (1ll<<(n)) ; i ++){
+    for(unsigned long long i = 1 ; i < (1ll<<(n)) ; i ++){
         try{
             F x{i};
             F y=E::gety(x);
+            cout << "Find " << x << "," << y << endl;
             allpoint[x.x]=y.x;
             allpoint_id[x.x]=allpoint.size()-1;
+            assert(y*y+x*y==x*x*x+a2*x*x+a6);
         }
         catch(int e){
         }
@@ -97,7 +100,6 @@ array<GF2,M> solve(list<pair<Poly<M,GF2>,bitset<M>>> l){
         result[idx]=val;
         if(solved[idx]==false)solvedcnt++;
         solved[idx]=true;
-        solvedcnt++;
         for(auto it=l.begin();it!=l.end();){
             auto& x=*it;
             if(x.second[idx]==false){
@@ -145,27 +147,44 @@ array<GF2,M> solve(list<pair<Poly<M,GF2>,bitset<M>>> l){
         }
         it++;
     }
-    assert(solvedcnt==M);
+    if(solvedcnt!=M){
+        cout << "Failed solving, need " << M << " has" << solvedcnt << endl;
+        throw 0;
+    }
     return result;
 }
 
 template <size_t M>
 array<long long,(1<<n)> solvePoint(array<F,M> pxa,const E& point){
+    E c[M]{};
+    size_t id[M]{};
     E p[M]{};
-    array<long long,(1<<n)> res{};
     for(size_t i = 0 ; i < M ; i ++){
-        p[i].x=pxa[i];
+        if(allpoint.count(pxa[i].x)==0){
+            throw 0;
+        }
+        c[i].x=pxa[i];
+        c[i].y=allpoint[pxa[i].x];
+        c[i].inf=false;
+        id[i]=allpoint_id[pxa[i].x];
+        auto x=c[i].x;
+        auto y=c[i].y;
+        assert((y*y+x*y==x*x*x+a2*x*x+a6));
     }
+    array<long long,(1<<n)> res{};
     for(unsigned long long X = 0 ; X < (1<<M) ; X ++){
         for(size_t i = 0 ; i < M ; i ++){
             if((1ull<<i)&X){
-                p[i].y=F{(allpoint[p[i].x.x])^(p[i].x.x)};
-                res[allpoint_id[p[i].x.x]]=-1;
+                p[i]=-c[i];
+                res[id[i]]=-1;
             }
             else{
-                p[i].y=F{(allpoint[p[i].x.x])};
-                res[allpoint_id[p[i].x.x]]=1;
+                p[i]=c[i];
+                res[id[i]]=1;
             }
+            auto x = p[i].x;
+            auto y = p[i].y;
+            assert((y*y+x*y==x*x*x+a2*x*x+a6));
         }
         E tmp=-point;
         for(size_t i = 0 ; i < M ; i ++){
@@ -175,8 +194,7 @@ array<long long,(1<<n)> solvePoint(array<F,M> pxa,const E& point){
             return res;
         }
     }
-    assert(false);
-    return res;
+    throw 0;
 }
 
 int main (){
@@ -187,16 +205,24 @@ int main (){
     cout << "P: " << p << endl << "Px" << ans << "=Q: " << q << endl;
     const auto& f=semaev_GF2n<m,E>;
     unordered_map<bitset<2*N>,unordered_set<bitset<2*N>>> picked;
+    gaussElimination<(1<<n)> gauss;
     int cnt=0;
     while(1){
-        cnt++;
         const auto a=get_rand(1e9);
         const auto b=get_rand(1e9);
         auto r = p*a+q*b;
-        if(picked[r.x.x].count(r.y.x))continue;
+        if(picked[r.x.x].count(r.y.x)){
+            cnt++;
+            if(cnt==100000){
+                cout << "Can't find new point" << endl;
+                return 0;
+            }
+            continue;
+        }
+        cnt=0;
         picked[r.x.x].insert(r.y.x);
         auto s = f.partialEval(0,r.x);
-        cout << "s:" << s << endl;
+        //cout << "s:" << s << endl;
         auto w = weilDescent<n,(1<<(m-2))>(s);
         auto g = grobnerGF2(conv(move(w)));
         auto l = convlist(move(g));
@@ -204,19 +230,44 @@ int main (){
         if(l.front().second.count()>1){
             continue;
         }
-        auto gf2res=solve(move(l));
-        array<F,m-1> pxa;
-        for(size_t i = 0 ; i < m-1 ; i ++){
-            for(size_t j = 0 ; j < n ; j ++){
-                pxa[i].x[j]=gf2res[i*n+j].x;
+        try{
+            auto gf2res=solve(move(l));
+            array<F,m-1> pxa{};
+            for(size_t i = 0 ; i < m-1 ; i ++){
+                for(size_t j = 0 ; j < n ; j ++){
+                    pxa[i].x[j]=gf2res[i*n+j].x;
+                }
+                for(size_t j = n+1 ; j < N ; j ++){
+                    pxa[i].x[j]=0;
+                }
+            }
+            array<long long,(1<<n)> scaler = solvePoint(pxa,r);
+            auto [ansa,ansb] = gauss.addPoly(pair<long long,long long>{a,b},scaler);
+            if(ansa!=0&&ansb!=0){
+                cout << "Finish, cnt= " << cnt << endl;
+                cout << "a = " << ansa << " b = " << ansb << endl;
+                E ta,tb;
+                if(ansa>=0){
+                    ta = p*ansa;
+                }
+                else ta = -(p*(-ansa));
+                if(ansb>=0){
+                    tb = q*ansb;
+                }
+                else tb = -(q*(-ansb));
+                if((ta+tb).inf){
+                    cout << "Find Answer!!" << endl;
+                    return 0;
+                }
+                else{
+                    cout << "QAQ" << endl;
+                    return 0;
+                }
             }
         }
-        array<long long,(1<<n)> scaler = solvePoint(pxa,r);
-        (void) scaler;
-        //a.addPoly({{a,b},scaler});
-        cout << "fin,try: " << cnt << endl;
-        cnt=0;
-        getchar();
+        catch(int e){
+            continue;
+        }
     }
 }
 

@@ -255,7 +255,7 @@ public:
         }();
         //if can't find, throw 0
         if(x.x==F::zero){
-            return x.sqrt();
+            return a6.sqrt();
         }
         F b = x;
         F c = -(x*x*x + a2*x*x + a6);
