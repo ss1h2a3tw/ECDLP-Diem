@@ -10,6 +10,7 @@
 
 struct GF2{
     bool x;
+    static constexpr bool one{true};
     GF2 operator-()const;
     GF2 operator-(const GF2& r)const;
     GF2& operator-=(const GF2&r);
@@ -18,6 +19,7 @@ struct GF2{
     GF2 operator*(const GF2& r)const;
     GF2& operator*=(const GF2& r);
     GF2 sqrt()const;
+    GF2 pow(unsigned long long p)const;
     bool operator==(const GF2& r)const;
     bool operator!=(const GF2& r)const;
     bool iszero()const;
@@ -228,6 +230,7 @@ public:
     static const F &a2,&a6;
     F x,y;
     bool inf;
+    EC<F,A2,A6>():x(),y(),inf(true){}
     EC<F,A2,A6>(const E&)=default;
     EC<F,A2,A6>(E&&)=default;
     EC<F,A2,A6>& operator=(const E&)=default;

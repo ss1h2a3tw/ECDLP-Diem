@@ -40,3 +40,7 @@ std::ostream& operator<<(std::ostream& os,const GF2 x){
 GF2 GF2::sqrt()const{
     return *this;
 }
+GF2 GF2::pow(unsigned long long p)const{
+    if(p==0)return GF2{true};
+    return *this;
+}

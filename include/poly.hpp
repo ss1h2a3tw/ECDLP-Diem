@@ -113,6 +113,25 @@ public:
         Poly<M-1,F>::clear_zero(m);
         return Poly<M-1,F>{m};
     }
+    P partialEvalNoShift(size_t idx,const F& val)const{
+        std::map<std::array<int,M>,F> m;
+        for(const auto& [t,s]:f){
+            auto news = s;
+            std::array<int,M> newt;
+            for(size_t i = 0 ; i < M ; i ++){
+                if(i!=idx){
+                    newt[i]=t[i];
+                }
+                else{
+                    newt[i]=0;
+                    news*=val.pow(t[i]);
+                }
+            }
+            m[newt]+=news;
+        }
+        clear_zero(m);
+        return Poly<M,F>{m};
+    }
     void clearZero(){
         clear_zero(f);
     }
