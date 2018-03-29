@@ -12,11 +12,9 @@ class gaussElimination{
             public:
                 polyType(const std::pair<LL, LL>& _lhs, std::array<LL,M>&& _rhs):lhs(_lhs), rhs(move(_rhs)){
                     firstItemPos = _firstItemPos();
-                    reduction();
                 }
                 polyType(const std::pair<LL, LL>& _lhs, const std::array<LL,M>& _rhs):lhs(_lhs), rhs(_rhs){
                     firstItemPos = _firstItemPos();
-                    reduction();
                 }
                 polyType() = default;
                 polyType(polyType&&) = default;
@@ -40,7 +38,6 @@ class gaussElimination{
                     lhs.second *= sc;
                     lhs.second += p.lhs.second * pc;
                     firstItemPos = _firstItemPos();
-                    reduction();
                 }
                 size_t getFirstItemPos()const{ return firstItemPos; }
                 solutionType getSolution()const{ return lhs; }
@@ -52,16 +49,6 @@ class gaussElimination{
                 }
                 LL gcd(LL a, LL b)const{
                     return b ? gcd(b, a%b) : a;
-                }
-                void reduction(){
-                    assert(lhs.first!=0 || lhs.second!=0);
-                    LL tmp;
-                    if (lhs.first && lhs.second) tmp = gcd(lhs.first, lhs.second);
-                    else tmp = lhs.first ? lhs.first : lhs.second;
-                    for (LL x : rhs) if (x) tmp = gcd(tmp, x);
-                    lhs.first /= tmp;
-                    lhs.second /= tmp;
-                    for (LL &x : rhs) x /= tmp;
                 }
                 size_t _firstItemPos(){ return std::find_if(rhs.begin(), rhs.end(), [](LL x){return x!=0;}) - rhs.begin(); }
                 std::pair<LL,LL> lhs;
