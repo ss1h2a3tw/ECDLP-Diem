@@ -76,7 +76,7 @@ unordered_map<bitset<2*N>,bitset<2*N>> allpoint;
 unordered_map<bitset<2*N>,size_t> allpoint_id;
 
 void init_allpoint(){
-    for(unsigned long long i = 1 ; i < (1ll<<(n)) ; i ++){
+    for(unsigned long long i = 0 ; i < (1ll<<(n)) ; i ++){
         try{
             F x{i};
             F y=E::gety(x);
@@ -88,7 +88,7 @@ void init_allpoint(){
         catch(int e){
         }
     }
-    printf("Init fin size: %d\n",(int)allpoint.size());
+    cout << "basis point count/2 = " << allpoint.size() << endl;
 }
 
 template <size_t M>
@@ -129,6 +129,13 @@ array<GF2,M> solve(list<pair<Poly<M,GF2>,bitset<M>>> l){
             }
             {
                 if(it->first.eval(tmp)==GF2{false}){
+                    tmp[idx]=GF2{true};
+                    bool both = it->first.eval(tmp)==GF2{false};
+                    tmp[idx]=GF2{false};
+                    if(both){
+                        it++;
+                        continue;
+                    }
                     addans(idx,GF2{false});
                     it=l.begin();
                     continue;
@@ -160,9 +167,7 @@ array<long long,(1<<n)> solvePoint(array<F,M> pxa,const E& point){
     size_t id[M]{};
     E p[M]{};
     for(size_t i = 0 ; i < M ; i ++){
-        if(allpoint.count(pxa[i].x)==0){
-            throw 0;
-        }
+        assert(allpoint.count(pxa[i].x)!=0);
         c[i].x=pxa[i];
         c[i].y=allpoint[pxa[i].x];
         c[i].inf=false;
@@ -182,9 +187,6 @@ array<long long,(1<<n)> solvePoint(array<F,M> pxa,const E& point){
                 p[i]=c[i];
                 res[id[i]]=1;
             }
-            auto x = p[i].x;
-            auto y = p[i].y;
-            assert((y*y+x*y==x*x*x+a2*x*x+a6));
         }
         E tmp=-point;
         for(size_t i = 0 ; i < M ; i ++){
@@ -194,7 +196,19 @@ array<long long,(1<<n)> solvePoint(array<F,M> pxa,const E& point){
             return res;
         }
     }
+    cout << "Failed to decompose the point, while we solved the equation" << endl;
+    cout << "This should not happen" << endl;
     throw 0;
+}
+
+template<size_t M>
+void checkSolveable(const array<Poly<M,GF2>,N> l){
+    array<int,M> tmp{};
+    for(const auto& p:l){
+        if(p.f.size()==1&&p.f.begin()->first==tmp){
+            throw 0;
+        }
+    }
 }
 
 int main (){
@@ -208,8 +222,8 @@ int main (){
     gaussElimination<(1<<n)> gauss;
     int cnt=0;
     while(1){
-        const auto a=get_rand(1e9);
-        const auto b=get_rand(1e9);
+        const auto a=get_rand(1000);
+        const auto b=get_rand(1000);
         auto r = p*a+q*b;
         if(picked[r.x.x].count(r.y.x)){
             cnt++;
@@ -221,16 +235,16 @@ int main (){
         }
         cnt=0;
         picked[r.x.x].insert(r.y.x);
-        auto s = f.partialEval(0,r.x);
-        //cout << "s:" << s << endl;
-        auto w = weilDescent<n,(1<<(m-2))>(s);
-        auto g = grobnerGF2(conv(move(w)));
-        auto l = convlist(move(g));
-        assert(l.front().second.count()!=0);
-        if(l.front().second.count()>1){
-            continue;
-        }
         try{
+            auto s = f.partialEval(0,r.x);
+            auto w = weilDescent<n,(1<<(m-2))>(s);
+            checkSolveable(w);
+            auto g = grobnerGF2(conv(w));
+            auto l = convlist(move(g));
+            assert(l.front().second.count()!=0);
+            if(l.front().second.count()>1){
+                continue;
+            }
             auto gf2res=solve(move(l));
             array<F,m-1> pxa{};
             for(size_t i = 0 ; i < m-1 ; i ++){
@@ -244,7 +258,7 @@ int main (){
             array<long long,(1<<n)> scaler = solvePoint(pxa,r);
             auto [ansa,ansb] = gauss.addPoly(pair<long long,long long>{a,b},scaler);
             if(ansa!=0&&ansb!=0){
-                cout << "Finish, cnt= " << cnt << endl;
+                cout << "Finish" << endl;
                 cout << "a = " << ansa << " b = " << ansb << endl;
                 E ta,tb;
                 if(ansa>=0){
@@ -260,7 +274,7 @@ int main (){
                     return 0;
                 }
                 else{
-                    cout << "QAQ" << endl;
+                    cout << "bad ans a:" << ansa << "b:" << ansb << endl;
                     return 0;
                 }
             }
